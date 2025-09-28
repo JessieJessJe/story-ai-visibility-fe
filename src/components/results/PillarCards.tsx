@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { Check, Clipboard, ClipboardCheck } from "lucide-react";
-import type { PillarResult } from "@/types/api";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Check, ChevronDown, ChevronUp, Clipboard, ClipboardCheck } from "lucide-react";
+import type { PillarResult, QuestionDetail } from "@/types/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -32,32 +31,11 @@ export function PillarCards({ pillars }: PillarCardsProps) {
                 {pillar.aiProviderInferred ? "✔ inferred" : "✖ not inferred"}
               </Badge>
             </header>
-
-            <Accordion>
-              {pillar.questions.map((question, index) => (
-                <AccordionItem key={question.prompt} value={`${pillar.title}-${index}`}>
-                  <AccordionTrigger targetValue={`${pillar.title}-${index}`}>
-                    {question.prompt}
-                  </AccordionTrigger>
-                  <AccordionContent targetValue={`${pillar.title}-${index}`}>
-                    <div className="space-y-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="outline">Category: {question.category}</Badge>
-                        <Badge variant="outline">Kind: {question.kind}</Badge>
-                        <Badge variant={question.aiProviderInferred ? "success" : "outline"}>
-                          {question.aiProviderInferred ? "✔ provider inferred" : "✖ provider hidden"}
-                        </Badge>
-                      </div>
-                      <div className="space-y-3">
-                        {question.responses.map((response) => (
-                          <ResponseRow key={`${question.prompt}-${response.model}`} {...response} />
-                        ))}
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
+            <div className="space-y-4">
+              {pillar.questions.map((question) => (
+                <QuestionBlock key={question.prompt} question={question} pillarTitle={pillar.title} />
               ))}
-            </Accordion>
+            </div>
           </article>
         ))}
       </div>
@@ -65,14 +43,59 @@ export function PillarCards({ pillars }: PillarCardsProps) {
   );
 }
 
-interface ResponseRowProps {
+interface QuestionBlockProps {
+  question: QuestionDetail;
+  pillarTitle: string;
+}
+
+function QuestionBlock({ question, pillarTitle }: QuestionBlockProps) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <div className="space-y-3">
+        <header className="space-y-1">
+          <p className="text-sm font-medium text-slate-800">{question.prompt}</p>
+          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
+            <Badge variant="outline">Category: {question.category}</Badge>
+            <Badge variant="outline">Kind: {question.kind}</Badge>
+            <Badge variant={question.aiProviderInferred ? "success" : "outline"}>
+              {question.aiProviderInferred ? "✔ provider inferred" : "✖ provider hidden"}
+            </Badge>
+          </div>
+          {question.assumptions?.length ? (
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-slate-600">
+              {question.assumptions.map((assumption, index) => (
+                <li key={`${pillarTitle}-${question.id ?? question.prompt}-assumption-${index}`}>
+                  {assumption}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </header>
+
+        <div className="space-y-3">
+          {question.responses.map((response) => (
+            <ModelResponse
+              key={`${question.prompt}-${response.model}`}
+              model={response.model}
+              answer={response.answer}
+              inferred={response.inferred ?? false}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface ModelResponseProps {
   model: string;
   answer: string;
   inferred: boolean;
 }
 
-function ResponseRow({ model, answer, inferred }: ResponseRowProps) {
+function ModelResponse({ model, answer, inferred }: ModelResponseProps) {
   const [copied, setCopied] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   const handleCopy = async () => {
     try {
@@ -85,25 +108,39 @@ function ResponseRow({ model, answer, inferred }: ResponseRowProps) {
   };
 
   return (
-    <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <div className="rounded-md border border-slate-200 bg-white">
+      <button
+        type="button"
+        onClick={() => setExpanded((prev) => !prev)}
+        className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-100"
+      >
         <div className="flex items-center gap-2">
-          <span className="font-medium text-slate-800">{model}</span>
+          <span className="font-semibold text-slate-900">{model}</span>
           <Badge variant={inferred ? "success" : "outline"}>
             {inferred ? <Check className="mr-1 h-3 w-3" aria-hidden /> : null}
             {inferred ? "Inferred" : "Not inferred"}
           </Badge>
         </div>
-        <Button type="button" size="sm" variant="secondary" onClick={handleCopy}>
-          {copied ? (
-            <ClipboardCheck className="h-4 w-4" aria-hidden />
-          ) : (
-            <Clipboard className="h-4 w-4" aria-hidden />
-          )}
-          Copy
-        </Button>
-      </div>
-      <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{answer}</p>
+        <span className="flex items-center gap-2 text-xs text-slate-500">
+          {expanded ? "Hide answer" : "Show answer"}
+          {expanded ? <ChevronUp className="h-4 w-4" aria-hidden /> : <ChevronDown className="h-4 w-4" aria-hidden />}
+        </span>
+      </button>
+      {expanded ? (
+        <div className="space-y-2 px-3 pb-3 pt-1">
+          <p className="text-sm text-slate-700 whitespace-pre-wrap">{answer}</p>
+          <div className="flex justify-end">
+            <Button type="button" size="sm" variant="secondary" onClick={handleCopy}>
+              {copied ? (
+                <ClipboardCheck className="h-4 w-4" aria-hidden />
+              ) : (
+                <Clipboard className="h-4 w-4" aria-hidden />
+              )}
+              Copy
+            </Button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

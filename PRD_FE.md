@@ -36,8 +36,8 @@ Backend contract recap:
    - Local 5-step simulation (mask → pillars → questions → models → evaluate) that ticks every second while awaiting API.
 5. **Results Visualization**
    - Summary cards for `summary.total_questions` and `summary.ai_provider_recognized_in`.
-   - Model comparison bar chart based on `metadata.models_run` and aggregated response counts.
-   - Pillar cards showing `selling_points[].pillar` as the title, optional summary, accordion of questions, assumptions, and per-model responses.
+   - Model comparison visualizes inference accuracy: overall per-model percentage bars plus a pillar × model heat map (color-coded by inference rate).
+   - Pillar cards show `selling_points[].pillar` as the title, optional summary, the masked question prompt/assumptions, and individual model answer accordions (model badge, inference badge, copy control, and expanded answer text).
    - Inference badges derived from `responses[].ai_provider_inferred`.
    - Metadata badges for `provider_name`, `client_name`, `mode`, and `story_id`.
 6. **Error Handling**
@@ -133,6 +133,7 @@ interface UIResult {
 
 - Key env vars: `NEXT_PUBLIC_API_URL`, optional `NEXT_PUBLIC_DEFAULT_PROVIDER_NAME`, `NEXT_PUBLIC_DEFAULT_PROVIDER_ALIASES`, `NEXT_PUBLIC_SHOW_SAMPLE_BUTTON`.
 - Scripts: `npm run dev`, `npm run build`, `npm run lint`, `npm run test`.
+- `tsconfig.json` sets `baseUrl: "."` so the `@/*` alias resolves correctly on CI/build servers (required for Vercel).
 - App is deployable to Vercel; configure rewrites or call Railway backend directly.
 - `.env.local.example` documents expected local settings.
 
@@ -153,4 +154,6 @@ interface UIResult {
 ## 13. Incident Log / Known Issues
 
 - **Invalid character build failure (Jan 2025)**: An earlier automated search/replace inserted the literal sequence `\u000a` into `src/lib/api.ts`, causing Next.js to report “Invalid character in identifier.” If similar work is required, prefer multiline edits via `apply_patch` or template literals instead of injecting escaped control characters.
+- **Path alias resolution on Vercel (Jan 2025)**: Deploys initially failed with `Module not found: Can't resolve '@/components/...` because `baseUrl` wasn’t defined. Adding `"baseUrl": "."` to `tsconfig.json` resolved the issue.
+- **DevTools well-known probe (Jan 2025)**: Chrome requests `/.well-known/appspecific/com.chrome.devtools.json` in development; provide a placeholder JSON in `public/.well-known/appspecific/` to avoid 500 errors.
 - Keep dev-only logging until QA confirms the contract is stable.

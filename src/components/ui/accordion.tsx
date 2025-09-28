@@ -13,15 +13,15 @@ const AccordionContext = React.createContext<AccordionContextValue | undefined>(
 export interface AccordionProps {
   children: React.ReactNode;
   type?: "single" | "multiple";
-  defaultValue?: string;
+  defaultValue?: string | null;
 }
 
 export const Accordion = ({
   children,
   type = "single",
-  defaultValue = null
+  defaultValue
 }: AccordionProps) => {
-  const [value, setValue] = React.useState<string | null>(defaultValue);
+  const [value, setValue] = React.useState<string | null>(defaultValue ?? null);
 
   const handleSetValue = (next: string | null) => {
     if (type === "multiple") {

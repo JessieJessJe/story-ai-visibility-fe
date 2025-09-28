@@ -42,7 +42,7 @@ export function ProgressState({ percentage, currentStep, steps, isActive }: Prog
               key={step}
               className={
                 isComplete
-                  ? "rounded-md border border-primary/30 bg-primary/10 px-3 py-2 font-medium text-primary"
+                  ? "rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-slate-500"
                   : isCurrent
                   ? "rounded-md border border-accent/40 bg-accent/10 px-3 py-2 font-medium text-emerald-700"
                   : "rounded-md border border-slate-200 bg-slate-50 px-3 py-2"

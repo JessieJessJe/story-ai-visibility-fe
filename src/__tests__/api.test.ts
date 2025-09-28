@@ -1,5 +1,5 @@
 import { adaptApiResponse, normalizeApiResponsePayload } from "@/lib/api";
-import type { ApiResponse } from "@/types/api";
+import { ApiResponse } from "@/types/api";
 import { jest } from "@jest/globals";
 
 jest.spyOn(console, "error").mockImplementation(() => undefined);

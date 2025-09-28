@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ResultsSection } from "@/components/results/ResultsSection";
-import type { UIResult } from "@/types/api";
+import { UIResult } from "@/types/api";
 
 const mockResult: UIResult = {
   storyId: "story-789",
@@ -40,7 +40,7 @@ describe("ResultsSection", () => {
     render(<ResultsSection result={mockResult} onExport={jest.fn()} />);
 
     expect(screen.getByText(/story-789/i)).toBeInTheDocument();
-    expect(screen.getByText(/Total questions evaluated/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /export json/i })).toBeInTheDocument();
     expect(screen.getByText(/OpenAI appears/i)).toBeInTheDocument();
     const modelOccurrences = screen.getAllByText(/gpt-4o/i);
     expect(modelOccurrences.length).toBeGreaterThan(0);

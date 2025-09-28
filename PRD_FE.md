@@ -65,6 +65,7 @@ Backend contract recap:
   - Derives the `inferred` boolean from either `responses[].inferred` or `responses[].ai_provider_inferred`.
   - Carries through `metadata.models_run`, `metadata.mode`, and other known fields; ignores unknown extras like `scores`.
   - Development-only `console.log('/analyze response', payload)` and `console.error` guards remain to inspect raw payloads when validation fails.
+  - **CORS dependency**: the FastAPI backend must allow the deployed origin (e.g., `https://story-ai-visibility-fe.vercel.app`) via `Access-Control-Allow-Origin` for production requests to succeed.
 
 ### UIResult shape (post-normalization)
 
@@ -156,4 +157,5 @@ interface UIResult {
 - **Invalid character build failure (Jan 2025)**: An earlier automated search/replace inserted the literal sequence `\u000a` into `src/lib/api.ts`, causing Next.js to report “Invalid character in identifier.” If similar work is required, prefer multiline edits via `apply_patch` or template literals instead of injecting escaped control characters.
 - **Path alias resolution on Vercel (Jan 2025)**: Deploys initially failed with `Module not found: Can't resolve '@/components/...` because `baseUrl` wasn’t defined. Adding `"baseUrl": "."` to `tsconfig.json` resolved the issue.
 - **DevTools well-known probe (Jan 2025)**: Chrome requests `/.well-known/appspecific/com.chrome.devtools.json` in development; provide a placeholder JSON in `public/.well-known/appspecific/` to avoid 500 errors.
+- **CORS configuration (Jan 2025)**: Production requests were blocked until the backend added the Vercel origin to its CORS allowlist. Ensure backend `CORSMiddleware` includes both `http://localhost:3000` and the deployed FE domain.
 - Keep dev-only logging until QA confirms the contract is stable.

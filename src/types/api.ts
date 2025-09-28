@@ -10,7 +10,9 @@ export interface ApiResponse {
   story_id: string;
   summary: ApiSummary;
   selling_points?: SellingPoint[];
+  sellingPoints?: SellingPoint[];
   pillars?: SellingPoint[];
+  scores?: Record<string, number>;
   metadata: {
     client_name: string | null;
     provider_name: string;
@@ -20,17 +22,20 @@ export interface ApiResponse {
 }
 
 export interface SellingPoint {
-  title: string;
-  summary: string;
+  title?: string;
+  pillar?: string;
+  summary?: string;
   ai_provider_inferred?: boolean;
   questions?: QuestionEntry[];
 }
 
 export interface QuestionEntry {
+  id?: string;
   prompt: string;
   category: string;
   kind: string;
   ai_provider_inferred?: boolean;
+  assumptions?: string[];
   responses?: QuestionResponse[];
 }
 
@@ -38,6 +43,7 @@ export interface QuestionResponse {
   model: string;
   answer: string;
   inferred?: boolean;
+  ai_provider_inferred?: boolean;
 }
 
 export interface UIResult {
@@ -67,5 +73,7 @@ export interface QuestionDetail {
   category: string;
   kind: string;
   aiProviderInferred: boolean;
+  assumptions?: string[];
+  id?: string;
   responses: QuestionResponse[];
 }
